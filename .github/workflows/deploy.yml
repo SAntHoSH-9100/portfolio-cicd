@@ -1,31 +1,25 @@
 name: Deploy Website
 
 on:
- push:
-  branches:
-   - main
+  push:
+    branches:
+      - main
 
 jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
- deploy:
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
 
-  runs-on: ubuntu-latest
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
 
-  steps:
-
-  - name: Checkout
-    uses: actions/checkout@v4
-
-
-  - name: Deploy to EC2
-    uses: appleboy/ssh-action@v1.0.3
-
-    with:
-     host: ${{ secrets.EC2_HOST }}
-     username: ubuntu
-     key: ${{ secrets.EC2_KEY }}
-
-     script: |
-       cd /var/www/html
-       git pull origin main
-       sudo systemctl restart nginx
+          script: |
+            cd /var/www/html
+            git fetch origin
+            git reset --hard origin/main
+            sudo systemctl restart nginx
